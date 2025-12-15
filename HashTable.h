@@ -5,84 +5,115 @@
 #include <stdexcept>
 #include "Dict.h"
 #include "TableEntry.h"
-
-#include "../../Practica1/PRA_2324_P1/ListLinked.h"  // ¡¡¡¡MODIFICAR!!!!
+#include "../../Practica1/PRA_2324_P1/ListLinked.h"  // Ajusta la ruta según tu proyecto
 
 template <typename V>
 class HashTable: public Dict<V> {
 
-    private:
-        	int n;
-		int max;
-		ListLinked<TableEntry<V>>* table;
+private:
+    int n; // número de entradas
+    int max; // capacidad de la tabla
+    ListLinked<TableEntry<V>>* table; // array de punteros a listas
 
-    public:
-        int h(std::string key){
-	
-		int i=0;
-		char c = key.at(i);
-		int valor=0;
-	
-		while(i < key.length()){
-    
-    		valor = valor + int(key.at(i));
-    		i++;
-		}
-	
-		return (valor % max);
-	}	
+public:
 
-	HashTable(int size){
+    // Función hash
+    int h(std::string key){
+        int valor = 0;
+        for (size_t i = 0; i < key.length(); i++){
+            valor += int(key[i]);
+        }
+        return valor % max;
+    }    
 
-		max = size;
-		n = 0;
-		table = new TableEntry<V>* [max];
-		for(int i=0;i<max;i++){
-			table[i]=nullptr;
-		}
-	};
+    // Constructor
+    HashTable(int size){
+        max = size;
+        n = 0;
+        table = new ListLinked<TableEntry<V>>[max];
+        for(int i = 0; i < max; i++){
+            table[i] = ListLinked<TableEntry<V>>();
+        }
+    }
 
+    // Destructor
+    ~HashTable(){
+        delete[] table;
+    }
 
+    // Devuelve la capacidad
+    int capacity() const {
+        return max;
+    }
 
-	~HashTable(){
-	
-		for(int i=0;i<max;i++){
-			if(table[i] != nullptr){
+    // Devuelve número de entradas
+    int entries() override {
+        return n;
+    }
 
-                        delete table[i];
-                	
-			}
-		}
-		delete[] table;
+    // Insertar clave-valor
+    void insert(std::string key, V value) override {
+        if(key == "") 
+            throw std::runtime_error("La clave no puede estar vacía.");
 
-	}
+        int idx = h(key);
 
-	int capacity(){
+        for(int i = 0; i < table[idx].size(); i++){
+            TableEntry<V> e = table[idx][i];
+            if(e.key == key){
+                throw std::runtime_error("Key '" + key + "' already exists!");
+            }
+        }
 
-		return max;
+        table[idx].append(TableEntry<V>(key, value));
+        n++;
+    }
 
-	}
-        friend std::ostream& operator<<(std::ostream &out, const HashTable<V> &th){
+    // Buscar valor por clave
+    V search(std::string key) override {
+        int idx = h(key);
 
-		for(int i=0;i<th.max;i++){
+        for(int i = 0; i < table[idx].size(); i++){
+            TableEntry<V> e = table[idx][i];
+            if(e.key == key) return e.value;
+        }
 
+        throw std::runtime_error("Key '" + key + "' not found!");
+    }
 
-		out<<th.table[i]<<"\n";
-			
-		}
+    // Eliminar clave
+    V remove(std::string key) override {
+        int idx = h(key);
 
-		return out;
-	}
-	V operator[](std::string key){
+        for(int i = 0; i < table[idx].size(); i++){
+            TableEntry<V> e = table[idx][i];
+            if(e.key == key){
+                V val = e.value;
+                table[idx].remove(i);
+                n--;
+                return val;
+            }
+        }
 
-	if(key!= ""){
-		return key;
-	}else {
-		throw std::runtime_error("La clave no puede estar vacía.");
-	}
+        throw std::runtime_error("Key '" + key + "' not found!");
+    }
 
+    // Operador []
+    V operator[](std::string key){
+        return search(key); // igual que search
+    }
 
-	}
+    // Impresión
+    friend std::ostream& operator<<(std::ostream &out, const HashTable<V> &th){
+        out << "HashTable [entries: " << th.n << ", capacity: " << th.max << "]\n";
+        out << "==============\n";
+        for(int i = 0; i < th.max; i++){
+            out << "== Cubeta " << i << " ==\n";
+            out << "List => " << th.table[i] << "\n\n";
+        }
+        out << "==============\n";
+        return out;
+    }
 };
 
 #endif
