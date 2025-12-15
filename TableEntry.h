@@ -3,27 +3,64 @@
 
 #include <string>
 #include <ostream>
+using namespace std;
 
-template <typename V>
+template <typename V> 
 class TableEntry {
-	public:
-		std::string key;
-		V value;
+    public:
+      
+	    // miembros públicos
+	string key;
+	V value;
 
-		TableEntry(std::string key, V value) : key(key), value(value) {}
-		TableEntry(std::string key) : key(key), value() {}
-		TableEntry(): key(), value() {}
+	TableEntry(string key, V value){
+		
+	this->key = key;
+	this->value = value;
 
-		friend bool operator==(const TableEntry<V> &te1, const TableEntry<V> &te2){
-			return te1.key == te2.key;	
+	}
+
+	
+	TableEntry(string key){
+
+		this->key = key;
+	}
+	
+	TableEntry(){
+
+		this->key = ""; 
+	}
+
+	friend bool operator==(const TableEntry<V> &te1, const TableEntry<V> &te2){
+
+		if(te1.key == te2.key){
+			return true;
+		}else{
+		       	return false;
 		}
-		friend bool operator!=(const TableEntry<V> &te1, const TableEntry<V> &te2){
-			return !(te1.key == te2.key);
-		}
-		friend std::ostream&operator<<(std::ostream &out, const TableEntry<V> &te){
-			out << "Clave: " << te.key << "\t\tValor: " << te.value;
-		       	return out;	
-		}
+
+
+	}
+
+	friend bool operator!=(const TableEntry<V> &te1, const TableEntry<V> &te2){
+
+		if(te1.key!=te2.key){
+			return true;
+		}else{
+			return false;
+		}	
+	
+	}
+
+	friend ostream& operator<<(ostream &out, const TableEntry<V> &te){
+		
+	out << te.key <<"->" << te.value;
+
+	return out;
+
+	}	
+		
+
 
 };
 
